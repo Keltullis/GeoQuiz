@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
         Question(R.string.question_asia,     true))
 
     private var currentIndex = 0
+    private var correctAnswerCounter = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,15 +35,18 @@ class MainActivity : AppCompatActivity() {
 
         trueButton.setOnClickListener {
             checkAnswer(true)
+            promoterButton(false)
         }
 
         falseButton.setOnClickListener {
             checkAnswer(false)
+            promoterButton(false)
         }
 
         nextButton.setOnClickListener {
             currentIndex = (currentIndex + 1) % questionBank.size
             updateQuestion()
+            promoterButton(true)
         }
 
         updateQuestion()
@@ -57,11 +61,31 @@ class MainActivity : AppCompatActivity() {
         val correctAnswer = questionBank[currentIndex].answer
 
         val messageResId = if(userAnswer == correctAnswer){
+            correctAnswerCounter++
             R.string.correct_toast
         } else{
             R.string.incorrect_toast
         }
 
-        Toast.makeText(this,messageResId,Toast.LENGTH_SHORT).show()
+        toastMaker(messageResId)
+    }
+
+    private fun promoterButton(Activate:Boolean){
+        trueButton.isEnabled = Activate
+        falseButton.isEnabled = Activate
+    }
+
+    private fun toastMaker(message:Int){
+        if(currentIndex == questionBank.size-1){
+            nextButton.isEnabled = false
+            Toast.makeText(this,resources.getString(message) + getScore(),Toast.LENGTH_SHORT).show()
+        } else{
+            Toast.makeText(this,message,Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getScore():String{
+        val percentCorrectAnswer = (correctAnswerCounter/questionBank.size*100).toInt()
+        return " You got $percentCorrectAnswer% of the marks."
     }
 }
