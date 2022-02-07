@@ -13,25 +13,26 @@ import androidx.lifecycle.ViewModelProviders
 private const val KEY_INDEX = "index"
 private const val REQUEST_CODE_CHEAT = 0
 
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var trueButton: Button
     private lateinit var falseButton: Button
     private lateinit var nextButton: Button
     private lateinit var cheatButton: Button
-    private lateinit var questionTextView:TextView
+    private lateinit var questionTextView: TextView
 
-    private val quizViewModel:QuizViewModel by lazy {
-        ViewModelProviders.of(this).get(QuizViewModel::class.java)
+    private val quizViewModel: QuizViewModel by lazy {
+        //ViewModelProviders.of(this).get(QuizViewModel::class.java) DEPRECATED
+        ViewModelProvider(this).get(QuizViewModel::class.java)
     }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val currentIndex = savedInstanceState?.getInt(KEY_INDEX,0) ?: 0
+        val currentIndex = savedInstanceState?.getInt(KEY_INDEX, 0) ?: 0
         quizViewModel.currentIndex = currentIndex
 
         trueButton = findViewById(R.id.true_button)
@@ -56,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         cheatButton.setOnClickListener {
             //Начало CheatActivity
             val answerIsTrue = quizViewModel.currentQuestionAnswer
-            val intent = CheatActivity.newIntent(this,answerIsTrue)
+            val intent = CheatActivity.newIntent(this, answerIsTrue)
             startActivityForResult(intent, REQUEST_CODE_CHEAT)
         }
 
@@ -66,12 +67,12 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(resultCode != Activity.RESULT_OK){
+        if (resultCode != Activity.RESULT_OK) {
             return
         }
 
-        if(requestCode == REQUEST_CODE_CHEAT){
-            quizViewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN,false) ?: false
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            quizViewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
         }
     }
 
@@ -80,21 +81,21 @@ class MainActivity : AppCompatActivity() {
         questionTextView.setText(questionTextResId)
     }
 
-    private fun checkAnswer(userAnswer:Boolean){
+    private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
 
-        val messageResId = if(userAnswer == correctAnswer){
-            R.string.correct_toast
-        } else{
-            R.string.incorrect_toast
+        val messageResId = when {
+            quizViewModel.isCheater -> R.string.judgment_toast
+            userAnswer == correctAnswer -> R.string.correct_toast
+            else -> R.string.incorrect_toast
         }
 
-        Toast.makeText(this,messageResId,Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
 
     // Сохранение состояния эксземпляра на случай его уничтожения.
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
-        savedInstanceState.putInt(KEY_INDEX,quizViewModel.currentIndex)
+        savedInstanceState.putInt(KEY_INDEX, quizViewModel.currentIndex)
     }
 }
